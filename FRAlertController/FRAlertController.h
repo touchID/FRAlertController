@@ -5,158 +5,83 @@
 //  Created by 1860 on 2016/12/10.
 //  Copyright © 2016年 FanrongQu. All rights reserved.
 //
-//  https://github.com/fanrongQu/FRAlertController-master
-//
-
-/** 颜色 */
-#define FRUIColor_RGB(r, g, b, a) [UIColor colorWithRed:(r)/255.0 green:(g)/255.0 blue:(b)/255.0 alpha:(a)/1.0]
-#define FR_IPHONE_X ([UIScreen mainScreen].bounds.size.width == 375 && [UIScreen mainScreen].bounds.size.height == 812)
-//顶部安全域
-#define FR_SafeArea_T (FR_IPHONE_X ? 44 : 20)
-//底部安全域
-#define FR_SafeArea_B (FR_IPHONE_X ? 34 : 0)
 
 #import <UIKit/UIKit.h>
-#import <Masonry/Masonry.h>
-#import "FRAlertAction.h"
+
+NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSInteger, FRAlertControllerStyle) {
     FRAlertControllerStyleActionSheet = 0,
     FRAlertControllerStyleAlert
-};
+} NS_ENUM_AVAILABLE_IOS(8_0);
 
-typedef void (^ FRAlertDatePickerBlock)(UIDatePicker *__nonnull datePicker);
-typedef void (^ FRAlertPickerViewBlock)(NSArray<NSIndexPath *> *__nonnull indexPathArray);
-typedef void (^ FRAlertTextFieldBlock)(UITextField *__nonnull textField);
-typedef void (^FRAlertPassWardBlock)(NSString *__nonnull passWord);
+@interface UIAlertAction (FRAdditions)
+@property (nonatomic, copy, nullable) void (^actionBlock)(UIAlertAction *action);
+@end
 
 @interface FRAlertController : UIViewController
 
-/**  弹框样式  */
-@property (nonatomic, readonly) FRAlertControllerStyle preferredStyle;
-/**  标题Label  */
-@property (nonatomic, strong) UILabel *titleLabel;
-/**  描述Label  */
-@property (nonatomic, strong) UILabel *messageLabel;
-/**  描述  */
-@property (nullable, nonatomic, copy) NSString *message;
+- (instancetype)initWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(FRAlertControllerStyle)preferredStyle;
 
 /**
- 创建FRAlertController
- 
- @param title 标题
- @param message 描述
- @param preferredStyle alertController类型
- 
- @return alertController
- */
-+ (nonnull FRAlertController *)alertControllerWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(FRAlertControllerStyle)preferredStyle;
+ 创建一个 alert controller 对象
 
+ @param title 标题
+ @param message 消息内容
+ @param preferredStyle 样式
+ @return alert controller 实例
+ */
++ (instancetype)alertControllerWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(FRAlertControllerStyle)preferredStyle;
+
+/**
+ 添加一个动作按钮
+
+ @param action 动作
+ */
+- (void)addAction:(UIAlertAction *)action;
+
+/**
+ 添加一个文本输入框
+
+ @param configurationHandler 配置处理闭包
+ */
+- (void)addTextFieldWithConfigurationHandler:(void (^ __nullable)(UITextField *textField))configurationHandler;
+
+/**
+ 显示 alert controller
+ */
 - (void)show;
 
-
-#pragma mark - 按钮
-- (void)addAction:(nonnull FRAlertAction *)action;
-
-@property (nonatomic, readonly, nullable) NSArray<FRAlertAction *> *actions;
-/**  设置弹框按钮文字大小  */
-- (void)setButtonsFont:(UIFont *)font;
-
-#pragma mark - TextField
-- (void)addTextFieldConfigurationHandler:(nonnull FRAlertTextFieldBlock)configurationHandler;
-
-@property (nullable, nonatomic, readonly) NSArray<UITextField *> *textFields;
-
-#pragma mark - DatePicker
 /**
- 类方法展示日期选择器
-
- @param controller 当前控制器
- @param title 标题
- @param message 描述
- @param preferredStyle alertController类型
- @param color 确定按钮颜色
- @param cancleTitle 取消按钮标题
- @param makeSureTitle 确认按钮标题
- @param style 确定按钮类型
- @param configurationHandler 日期选择器回调
- 
- @return alertController
+ 标题
  */
-+ (nonnull FRAlertController *)showDatePickerController:(nonnull UIViewController *)controller title:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(FRAlertControllerStyle)preferredStyle datePickerColor:(nullable UIColor *)color cancleTitle:(NSString *_Nullable)cancleTitle makeSureTitle:(NSString *_Nullable)makeSureTitle datePickerStyle:(FRAlertActionStyle)style configurationHandler:(nonnull FRAlertDatePickerBlock)configurationHandler;
-/**
- 添加日期选择器(默认选中日期为今天  最小日期默认为1900/01/01  最大日期默认为当前日期)
- 
- @param color 确定按钮颜色
- @param cancleTitle 取消按钮标题
- @param makeSureTitle 确认按钮标题
- @param style 确定按钮类型
- @param configurationHandler 日期选择器回调
- */
-- (void)addDatePickerWithColor:(nullable UIColor *)color cancleTitle:(NSString *_Nullable)cancleTitle makeSureTitle:(NSString *_Nullable)makeSureTitle style:(FRAlertActionStyle)style configurationHandler:(nonnull FRAlertDatePickerBlock)configurationHandler;
-
-/**  日期选择器  */
-@property (nonatomic, strong, nullable) UIDatePicker *datePicker;
-
-#pragma mark - PickerView
-/**  ----- 为alertController添加选择器（PickerView） -----  */
-
+@property (nonatomic, copy, nullable) NSString *title;
 
 /**
- 类方法展示PickerView
-
- @param title 标题
- @param message 描述
- @param preferredStyle 显示样式
- @param pickerArray 选择数组(二维数组奥)
- @param color 确认按钮颜色
- @param cancleTitle 取消按钮标题
- @param makeSureTitle 确认按钮标题
- @param style 按钮样式
- @param configurationHandler 回调
- @return FRAlertController对象
+ 消息内容
  */
-+ (nonnull FRAlertController *)showPickerViewWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(FRAlertControllerStyle)preferredStyle  pickerArray:(NSArray *_Nullable)pickerArray pickerButtonColor:(nullable UIColor *)color cancleTitle:(NSString *_Nullable)cancleTitle makeSureTitle:(NSString *_Nullable)makeSureTitle pickerViewStyle:(FRAlertActionStyle)style configurationHandler:(nonnull FRAlertPickerViewBlock)configurationHandler;
-
+@property (nonatomic, copy, nullable) NSString *message;
 
 /**
- 添加PickerView
- 
- @param pickerArray 选择数组
- @param color 确认按钮颜色
- @param cancleTitle 取消按钮标题
- @param makeSureTitle 确认按钮标题
- @param style 按钮样式
- @param configurationHandler 回调
+ 样式
  */
-- (void)addPickerViewWithPickerArray:(NSArray *_Nullable)pickerArray pickerButtonColor:(nullable UIColor *)color cancleTitle:(NSString *_Nullable)cancleTitle makeSureTitle:(NSString *_Nullable)makeSureTitle style:(FRAlertActionStyle)style configurationHandler:(nonnull FRAlertPickerViewBlock)configurationHandler;
-
-/**  选择器  */
-@property (nonatomic, strong, nullable) UIPickerView *pickerView;
-
-
-#pragma mark - PassWard
-/**
- 类方法展示密码输入框
- 
- @param controller 当前控制器
- @param title 标题
- @param message 描述
- @param preferredStyle alertController类型
- @param payMoney 付款金额
- @param configurationHandler 支付密码回调
- 
- @return AlertController
- */
-+ (nonnull FRAlertController *)showPassWardController:(nonnull UIViewController *)controller title:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(FRAlertControllerStyle)preferredStyle payMoney:(nonnull NSString *)payMoney configurationHandler:(nonnull FRAlertPassWardBlock)configurationHandler;
+@property (nonatomic, readonly) FRAlertControllerStyle preferredStyle;
 
 /**
- 支付密码
-
- @param payMoney 付款金额
- @param configurationHandler 支付密码回调
+ 动作按钮数组
  */
-- (void)addPassWardWithPayMoney:(nonnull NSString *)payMoney configurationHandler:(nonnull FRAlertPassWardBlock)configurationHandler;
+@property (nonatomic, readonly, copy) NSArray<UIAlertAction *> *actions;
 
+/**
+ 文本输入框数组
+ */
+@property (nonatomic, readonly, copy) NSArray<UITextField *> *textFields;
+
+/**
+ 首选动作（默认为 nil）
+ */
+@property (nonatomic, strong, nullable) UIAlertAction *preferredAction API_AVAILABLE(ios(9.0));
 
 @end
+
+NS_ASSUME_NONNULL_END
